@@ -14,7 +14,7 @@ def process(request):
             {"type": "text", "content": "cropTop: " + request.POST['cropTop']},
             {"type": "text", "content": "cropRight: " + request.POST['cropRight']},
             {"type": "text", "content": "cropBottom: " + request.POST['cropBottom']},
-            {"type": "text", "content": image_url},
+            {"type": "image", "content": image_url},
         ]
         return JsonResponse(response, safe=False)
     else:
