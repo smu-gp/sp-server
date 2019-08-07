@@ -44,13 +44,17 @@ def process(request):
         
         response = [
             {"type": "text", "content": "Success!"},
-            {"type": "text", "content": "cropLeft: " + request.POST['cropLeft']},
-            {"type": "text", "content": "cropTop: " + request.POST['cropTop']},
-            {"type": "text", "content": "cropRight: " + request.POST['cropRight']},
-            {"type": "text", "content": "cropBottom: " + request.POST['cropBottom']},
-            {"type": "image", "content": image_url},
-            {"type": "text", "content": word_list[0]},
+            #{"type": "image", "content": image_url},
+            #{"type": "text", "content": word_list[0]},
         ]
+        
+        for n in word_list:
+            response.append({"type": "text", "content": n})
+        
+        if os.path.isfile(path+image_url):
+           os.remove(path+image_url)
+           print(path+image_url+" delete complete!")
+        
         return JsonResponse(response, safe=False)
     else:
         return JsonResponse({'error': 'Please request post'})
