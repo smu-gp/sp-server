@@ -13,7 +13,11 @@ def detect_document(path):
     image = vision.types.Image(content=content)
 
     response = client.document_text_detection(image=image)
+    
     word_list=[]
+    sentence_list=[]
+    sentence=""
+    
     for page in response.full_text_annotation.pages:
         for block in page.blocks:
             #print('\nBlock \n')
@@ -27,8 +31,14 @@ def detect_document(path):
                     word_list.append(word_text)
 
                     #for symbol in word.symbols:
-                        #print('\tSymbol: {} '.format(symbol.text))
-    return word_list
+            for i in word_list:
+                if(i != '.'):
+                    sentence = sentence + i + " "
+                else:
+                    sentence_list.append(sentence)
+                    sentence=""
+
+    return sentence_list
 
 
 
@@ -40,7 +50,7 @@ def process(request):
         saved_name = fs.save(image.name, image)
         image_url = fs.url(saved_name)
         path = (os.getcwd())
-        word_list = detect_document(path + image_url)
+        sentence_list = detect_document(path + image_url)
         
         response = [
             {"type": "text", "content": "Success!"},
@@ -48,7 +58,7 @@ def process(request):
             #{"type": "text", "content": word_list[0]},
         ]
         
-        for n in word_list:
+        for n in sentence_list:
             response.append({"type": "text", "content": n})
         
         if os.path.isfile(path+image_url):
