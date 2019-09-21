@@ -3,41 +3,39 @@ from django.http import JsonResponse
 
 import io
 import re
+import os
+from google.oauth2 import service_account
 
 def detect_document(path):
     from google.cloud import vision
+    credentials = service_account.Credentials.from_service_account_file('/home/pmp/myoungjin/balmy-particle-246206-23eecc6f950a.json')
     client = vision.ImageAnnotatorClient()
     
     with io.open(path,'rb') as image_file:
         content = image_file.read()
+        
     image = vision.types.Image(content=content)
 
     response = client.document_text_detection(image=image)
     
-    word_list=[]
-    sentence_list=[]
-    sentence=""
-    
+    text=""
     for page in response.full_text_annotation.pages:
         for block in page.blocks:
-            #print('\nBlock \n')
-        
             for paragraph in block.paragraphs:
-                #print('Paragraph ')
-            
                 for word in paragraph.words:
-                    word_text=''.join([symbol.text for symbol in word.symbols])
-                    #print('Word text: {} '.format(word_text))
-                    word_list.append(word_text)
-
-                    #for symbol in word.symbols:
-            for i in word_list:
-                if(i != '.'):
-                    sentence = sentence + i + " "
-                else:
-                    sentence_list.append(sentence)
-                    sentence=""
-
+                    for symbol in word.symbols:
+                        text+=symbol.text
+                        if(symbol.property.detected_break.type == 1):
+                            text+=' '
+                        if(symbol.property.detected_break.type == 2):
+                            text+='\t'
+                        if(symbol.property.detected_break.type == 3):
+                            text+='\n'
+                        if(symbol.property.detected_break.type == 5):
+                            text+='\n'
+                            
+    sentence_list = text.split('\n')
+    sentence_list.pop()
     return sentence_list
 
 
@@ -53,7 +51,6 @@ def process(request):
         sentence_list = detect_document(path + image_url)
         
         response = [
-            {"type": "text", "content": "Success!"},
             #{"type": "image", "content": image_url},
             #{"type": "text", "content": word_list[0]},
         ]
